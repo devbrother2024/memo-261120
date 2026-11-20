@@ -5,7 +5,7 @@ import { IconButton } from "./icon-button";
 import { MemoBody } from "./memo-body";
 import { Screen } from "./screen";
 
-/** 메모 상세 화면 — Figma Mobile/Detail. 샘플 메모와 이 브라우저에 저장한 메모가 함께 쓴다 */
+/** 메모 상세 화면 — Figma Mobile/Detail */
 export function MemoDetailView({ memo }: { memo: Memo }) {
   return (
     <Screen className="pt-space-48">

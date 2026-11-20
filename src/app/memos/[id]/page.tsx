@@ -1,11 +1,8 @@
+import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { MemoDetailView } from "@/components/memo-detail-view";
-import { SavedMemoDetail } from "@/components/saved-memo-detail";
-import { findMemo, memos } from "@/lib/memos";
-
-export function generateStaticParams() {
-  return memos.map((memo) => ({ id: memo.id }));
-}
+import { getMemo } from "@/lib/memo-db";
 
 /** 메모 상세 — Figma Mobile/Detail */
 export default function MemoDetailPage({ params }: PageProps<"/memos/[id]">) {
@@ -18,7 +15,8 @@ export default function MemoDetailPage({ params }: PageProps<"/memos/[id]">) {
 
 async function MemoDetail({ params }: Pick<PageProps<"/memos/[id]">, "params">) {
   const { id } = await params;
-  const memo = findMemo(id);
-  // 샘플 메모는 서버에서, 그 밖의 id 는 이 브라우저에 저장한 메모인지 브라우저에서 찾는다
-  return memo ? <MemoDetailView memo={memo} /> : <SavedMemoDetail id={id} />;
+  await connection();
+  const memo = await getMemo(id, new Date());
+  if (!memo) notFound();
+  return <MemoDetailView memo={memo} />;
 }

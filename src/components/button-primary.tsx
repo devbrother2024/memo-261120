@@ -13,11 +13,14 @@ export function ButtonPrimary({
   icon = false,
   href,
   onClick,
+  disabled = false,
 }: {
   label: string;
   icon?: boolean;
   href?: string;
   onClick?: () => void;
+  /** 저장하는 동안처럼 잠시 누를 수 없을 때 */
+  disabled?: boolean;
 }) {
   const content = (
     <>
@@ -33,7 +36,7 @@ export function ButtonPrimary({
     );
   }
   return (
-    <button type="button" onClick={onClick} className={className}>
+    <button type="button" onClick={onClick} disabled={disabled} className={`${className} disabled:opacity-70`}>
       {content}
     </button>
   );

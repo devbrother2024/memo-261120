@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { clearDraft, getDraftSnapshot, parseDraft, saveDraft, saveMemo, subscribe, type Draft } from "@/lib/memo-store";
+import { createMemo } from "@/lib/memo-actions";
+import { clearDraft, getDraftSnapshot, parseDraft, saveDraft, subscribe, type Draft } from "@/lib/memo-store";
 import { categories, labelColors, type Block } from "@/lib/memos";
 import { ButtonPrimary } from "./button-primary";
 import { Chip } from "./chip";
@@ -30,6 +31,7 @@ function WriteForm({ initialDraft }: { initialDraft: Draft | null }) {
   }));
   const [autosaved, setAutosaved] = useState(initialDraft !== null);
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // 임시 저장 타이머가 최신 값을 읽을 수 있게 ref 에도 둔다
   const formRef = useRef(form);
@@ -77,16 +79,24 @@ function WriteForm({ initialDraft }: { initialDraft: Draft | null }) {
     scheduleDraft();
   };
 
-  const save = () => {
+  const save = async () => {
+    if (saving) return;
     const title = form.title.trim();
     if (!title) {
       setMessage("제목을 입력해 주세요");
       titleRef.current?.focus();
       return;
     }
-    const saved = saveMemo({ title, category: form.category, color: form.color, blocks: blocksRef.current });
-    if (!saved) {
-      setMessage("이 브라우저에 저장하지 못했어요");
+    setSaving(true);
+    let result;
+    try {
+      result = await createMemo({ title, category: form.category, color: form.color, blocks: blocksRef.current });
+    } catch {
+      result = { ok: false as const, message: "메모를 저장하지 못했어요. 잠시 뒤에 다시 눌러 주세요" };
+    }
+    if (!result.ok) {
+      setMessage(result.message);
+      setSaving(false);
       return;
     }
     doneRef.current = true;
@@ -153,7 +163,7 @@ function WriteForm({ initialDraft }: { initialDraft: Draft | null }) {
         )}
       </main>
 
-      <ButtonPrimary label="저장하기" onClick={save} />
+      <ButtonPrimary label={saving ? "저장하는 중…" : "저장하기"} onClick={save} disabled={saving} />
     </Screen>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { categories, type Category, type Memo } from "@/lib/memos";
-import { useSavedMemos } from "@/lib/use-saved-memos";
 import { Card, CardHeader } from "./card";
 import { Chip } from "./chip";
 import { MemoItem } from "./memo-item";
@@ -12,14 +11,12 @@ type Selected = "전체" | Category;
 
 /**
  * 분류 칩 + 메모 카드(고정한 메모, 최근 메모). 칩을 누르면 그 분류의 메모만 보인다.
- * 이 브라우저에 저장한 메모는 최근 메모의 맨 위에 보인다.
+ * 메모는 Supabase 에서 읽어 온 것이고, 최신순으로 들어온다.
  */
 export function MemoBrowser({ memos }: { memos: Memo[] }) {
   const [selected, setSelected] = useState<Selected>("전체");
-  const { memos: saved } = useSavedMemos();
 
-  const all = [...saved, ...memos];
-  const visible = selected === "전체" ? all : all.filter((memo) => memo.category === selected);
+  const visible = selected === "전체" ? memos : memos.filter((memo) => memo.category === selected);
   const pinned = visible.filter((memo) => memo.pinned);
   const recent = visible.filter((memo) => !memo.pinned);
 
